@@ -1,59 +1,36 @@
 # Allo Inventory Management System
 
-A full-stack Inventory Management and Reservation System built using Next.js, Prisma, PostgreSQL, and Tailwind CSS.
+A full-stack inventory reservation and warehouse management system built using Next.js, Prisma, Neon PostgreSQL, and TypeScript.
+
+This project was developed as part of the Allo Engineering Take-Home Exercise.
+
+---
+
+# Live Demo
+
+https://allo-inventory-self-delta.vercel.app/dashboard
 
 ---
 
 # Features
 
-## Product Management
-- Add new products
-- View all products
-- Display product details and pricing
-
-## Warehouse Inventory
-- Manage stock across multiple warehouses
-- Track:
-  - Available Stock
-  - Reserved Stock
-- Dynamic stock status:
-  - In Stock
-  - Low Stock
-  - Out Of Stock
-
-## Reservation System
-- Create reservations
-- Auto-expiry after 60 seconds
-- Confirm reservation
-- Cancel reservation
-- Real-time countdown timer
-
-## Inventory Synchronization
-- Reserved stock updates automatically
-- Expired reservations restore stock
-- Cancelled reservations restore stock
-- Confirmed reservations finalize inventory changes
-
-## Dashboard
-- Total products
-- Total reservations
-- Pending reservations
-- Recent products
-- Recent reservations
-
-## Notifications
-- Toast notifications for:
-  - Reservation success
-  - Reservation failure
-  - Confirm success
-  - Cancel success
+- Multi-warehouse inventory management
+- Product stock tracking
+- Reservation-based checkout flow
+- Reservation confirmation and cancellation
+- Automatic reservation expiry handling
+- Real-time stock restoration
+- Dashboard analytics
+- Prisma ORM integration
+- Neon PostgreSQL database
+- Fully deployed on Vercel
 
 ---
 
 # Tech Stack
 
 ## Frontend
-- Next.js 15
+- Next.js App Router
 - React
 - TypeScript
 - Tailwind CSS
@@ -61,57 +38,122 @@ A full-stack Inventory Management and Reservation System built using Next.js, Pr
 ## Backend
 - Next.js API Routes
 - Prisma ORM
-
-## Database
-- PostgreSQL (Neon Database)
+- PostgreSQL (Neon)
 
 ## Deployment
 - Vercel
 
 ---
 
+# Core Functionality
+
+## Inventory Management
+- Add products
+- Track stock warehouse-wise
+- Update inventory dynamically
+
+## Reservation System
+- Reserve stock temporarily during checkout
+- Confirm reservation after successful payment
+- Release reservation if cancelled
+- Automatically expire reservations after timeout
+
+## Concurrency Handling
+The reservation logic prevents overselling by:
+- Using Prisma transactional operations
+- Checking available stock before reservation
+- Maintaining separate `stock` and `reservedStock` values
+
+---
+
+# Reservation Expiry Mechanism
+
+Expired reservations are automatically released using an API-based cleanup process.
+
+The system:
+1. Finds expired pending reservations
+2. Restores reserved stock back to inventory
+3. Updates reservation status to `EXPIRED`
+
+This ensures inventory consistency and prevents permanently locked stock.
+
+---
+
+# Database Models
+
+## Product
+- Product information
+- Pricing
+- Description
+
+## Warehouse
+- Warehouse details
+
+## Inventory
+- Product-wise warehouse stock
+- Reserved stock tracking
+
+## Reservation
+- Reservation status
+- Expiry handling
+- Quantity tracking
+
+---
+
+# API Endpoints
+
+## Products
+- `GET /api/products`
+
+## Warehouses
+- `GET /api/warehouses`
+
+## Reservations
+- `POST /api/reservations`
+- `POST /api/reservations/[id]/confirm`
+- `POST /api/reservations/[id]/release`
+
+## Inventory
+- `POST /api/inventory/update`
+
+## Expiry Cleanup
+- `GET /api/cron`
+
+---
+
 # Project Structure
 
 ```bash
-src/
- ├── app/
- │   ├── dashboard/
- │   ├── products/
- │   ├── reservations/
- │   ├── create-reservation/
- │   ├── add-product/
- │   ├── update-inventory/
- │   └── api/
- │       ├── cron/
- │       ├── products/
- │       ├── warehouses/
- │       └── reservations/
- │
- ├── components/
- │   ├── Sidebar.tsx
- │   └── StatsCards.tsx
- │
- └── lib/
-     └── prisma.ts
+app/
+ ├── api/
+ ├── dashboard/
+ ├── inventory/
+ ├── reservations/
+ ├── add-product/
+ └── update-inventory/
+
+lib/
+ └── prisma.ts
+
+prisma/
+ ├── schema.prisma
+ └── seed.ts
 ```
 
 ---
 
-# Installation
+# How to Run Locally
 
-## Clone Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/allo-inventory.git
-```
-
-## Navigate To Project
+## 1. Clone Repository
 
 ```bash
+git clone <your-repository-url>
 cd allo-inventory
 ```
 
-## Install Dependencies
+---
+
+## 2. Install Dependencies
 
 ```bash
 npm install
@@ -119,138 +161,82 @@ npm install
 
 ---
 
-# Environment Variables
+## 3. Create Environment Variables
 
 Create a `.env` file:
 
 ```env
-DATABASE_URL="your_database_url"
+DATABASE_URL=your_neon_database_url
 ```
 
 ---
 
-# Prisma Setup
-
-## Generate Prisma Client
+## 4. Generate Prisma Client
 
 ```bash
 npx prisma generate
 ```
 
-## Push Database Schema
+---
+
+## 5. Push Database Schema
 
 ```bash
 npx prisma db push
 ```
 
-## Open Prisma Studio
+---
+
+## 6. Seed Database
 
 ```bash
-npx prisma studio
+npm run seed
 ```
 
 ---
 
-# Run Development Server
+## 7. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Open:
+---
 
-```bash
-http://localhost:3000
-```
+# Production Deployment
+
+The application is deployed on:
+- Vercel (Frontend + API)
+- Neon PostgreSQL (Database)
 
 ---
 
-# Reservation Expiry Logic
+# Challenges Faced
 
-Reservations remain in `PENDING` state for 60 seconds.
-
-If not confirmed or cancelled within 60 seconds:
-- status changes to `EXPIRED`
-- inventory stock is restored automatically
-
-Implemented using:
-- `/api/cron` route
-- periodic cleanup logic
-
----
-
-# Reservation Status Flow
-
-```text
-PENDING
-   ↓
-CONFIRMED
-
-PENDING
-   ↓
-CANCELLED
-
-PENDING
-   ↓
-EXPIRED
-```
-
----
-
-# API Routes
-
-## Products
-
-```bash
-GET    /api/products
-POST   /api/products
-DELETE /api/products/delete
-```
-
-## Warehouses
-
-```bash
-GET /api/warehouses
-```
-
-## Reservations
-
-```bash
-GET    /api/reservations
-POST   /api/reservations
-POST   /api/reservations/[id]/confirm
-POST   /api/reservations/[id]/release
-```
-
-## Cron Cleanup
-
-```bash
-GET /api/cron
-```
-
----
-
-# Deployment
-
-Deployed using Vercel.
-
-## Production URL
-
-```bash
-Add your deployed Vercel URL here
-```
+- Handling race conditions during reservation
+- Managing Prisma deployment issues on Vercel
+- Reservation expiry synchronization
+- Ensuring stock consistency
 
 ---
 
 # Future Improvements
 
-- Authentication
-- Role-based access
-- Search and filtering
-- Analytics dashboard
-- Email notifications
-- Pagination
-- Redis queue for expiry jobs
+- Redis-based distributed locking
+- Idempotency support
+- Real-time updates using WebSockets
+- Better UI/UX enhancements
+- Background workers for expiry cleanup
+- Payment gateway integration
+- Authentication & authorization
+
+---
+
+# Trade-offs
+
+- Used API-triggered cleanup instead of dedicated background workers
+- Focused more on correctness and deployment stability
+- Simplified frontend UI for faster delivery
 
 ---
 
