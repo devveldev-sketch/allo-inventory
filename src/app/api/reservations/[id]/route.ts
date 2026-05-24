@@ -3,17 +3,23 @@ import {
   NextResponse,
 } from "next/server";
 
-import { prisma } from "../../../../lib/prisma";
+import { prisma }
+  from "../../../../lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
 
   try {
 
-    const reservationId =
-      params.id;
+    const { id: reservationId } =
+      await context.params;
 
     // Find reservation
     const reservation =
@@ -54,8 +60,7 @@ export async function POST(
       );
     }
 
-    // FIRST mark as cancelled
-    // So cron won't mark expired
+    // Mark cancelled
     await prisma.reservation.update({
       where: {
         id: reservationId,
@@ -93,7 +98,7 @@ export async function POST(
       );
     }
 
-    // Restore stock correctly
+    // Restore stock
     await prisma.inventory.update({
       where: {
         productId_warehouseId: {
@@ -107,13 +112,11 @@ export async function POST(
 
       data: {
 
-        // Add stock back
         stock: {
           increment:
             reservation.quantity,
         },
 
-        // Reduce reserved stock safely
         reservedStock:
           Math.max(
             inventory.reservedStock -
