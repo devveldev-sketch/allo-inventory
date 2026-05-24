@@ -1,36 +1,262 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Allo Inventory Management System
 
-## Getting Started
+A full-stack Inventory Management and Reservation System built using Next.js, Prisma, PostgreSQL, and Tailwind CSS.
 
-First, run the development server:
+---
+
+# Features
+
+## Product Management
+- Add new products
+- View all products
+- Display product details and pricing
+
+## Warehouse Inventory
+- Manage stock across multiple warehouses
+- Track:
+  - Available Stock
+  - Reserved Stock
+- Dynamic stock status:
+  - In Stock
+  - Low Stock
+  - Out Of Stock
+
+## Reservation System
+- Create reservations
+- Auto-expiry after 60 seconds
+- Confirm reservation
+- Cancel reservation
+- Real-time countdown timer
+
+## Inventory Synchronization
+- Reserved stock updates automatically
+- Expired reservations restore stock
+- Cancelled reservations restore stock
+- Confirmed reservations finalize inventory changes
+
+## Dashboard
+- Total products
+- Total reservations
+- Pending reservations
+- Recent products
+- Recent reservations
+
+## Notifications
+- Toast notifications for:
+  - Reservation success
+  - Reservation failure
+  - Confirm success
+  - Cancel success
+
+---
+
+# Tech Stack
+
+## Frontend
+- Next.js 15
+- React
+- TypeScript
+- Tailwind CSS
+
+## Backend
+- Next.js API Routes
+- Prisma ORM
+
+## Database
+- PostgreSQL (Neon Database)
+
+## Deployment
+- Vercel
+
+---
+
+# Project Structure
+
+```bash
+src/
+ ├── app/
+ │   ├── dashboard/
+ │   ├── products/
+ │   ├── reservations/
+ │   ├── create-reservation/
+ │   ├── add-product/
+ │   ├── update-inventory/
+ │   └── api/
+ │       ├── cron/
+ │       ├── products/
+ │       ├── warehouses/
+ │       └── reservations/
+ │
+ ├── components/
+ │   ├── Sidebar.tsx
+ │   └── StatsCards.tsx
+ │
+ └── lib/
+     └── prisma.ts
+```
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/allo-inventory.git
+```
+
+## Navigate To Project
+
+```bash
+cd allo-inventory
+```
+
+## Install Dependencies
+
+```bash
+npm install
+```
+
+---
+
+# Environment Variables
+
+Create a `.env` file:
+
+```env
+DATABASE_URL="your_database_url"
+```
+
+---
+
+# Prisma Setup
+
+## Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+## Push Database Schema
+
+```bash
+npx prisma db push
+```
+
+## Open Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+---
+
+# Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+# Reservation Expiry Logic
 
-To learn more about Next.js, take a look at the following resources:
+Reservations remain in `PENDING` state for 60 seconds.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If not confirmed or cancelled within 60 seconds:
+- status changes to `EXPIRED`
+- inventory stock is restored automatically
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Implemented using:
+- `/api/cron` route
+- periodic cleanup logic
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Reservation Status Flow
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+PENDING
+   ↓
+CONFIRMED
+
+PENDING
+   ↓
+CANCELLED
+
+PENDING
+   ↓
+EXPIRED
+```
+
+---
+
+# API Routes
+
+## Products
+
+```bash
+GET    /api/products
+POST   /api/products
+DELETE /api/products/delete
+```
+
+## Warehouses
+
+```bash
+GET /api/warehouses
+```
+
+## Reservations
+
+```bash
+GET    /api/reservations
+POST   /api/reservations
+POST   /api/reservations/[id]/confirm
+POST   /api/reservations/[id]/release
+```
+
+## Cron Cleanup
+
+```bash
+GET /api/cron
+```
+
+---
+
+# Deployment
+
+Deployed using Vercel.
+
+## Production URL
+
+```bash
+Add your deployed Vercel URL here
+```
+
+---
+
+# Future Improvements
+
+- Authentication
+- Role-based access
+- Search and filtering
+- Analytics dashboard
+- Email notifications
+- Pagination
+- Redis queue for expiry jobs
+
+---
+
+# Author
+
+Devadharshini S
+
+Integrated M.Tech CSE (Business Analytics)  
+VIT Chennai
